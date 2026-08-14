@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arpin Hamonangan Pasaribu — Ledger of Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#060B18;
+    --bg-panel:#0D1730;
+    --bg-panel-2:#101D3E;
+    --line:#1E2E52;
+    --ink:#E7EEFC;
+    --ink-dim:#8FA3C8;
+    --ink-faint:#5A6E96;
+    --blue:#2E86FF;
+    --blue-soft:#4CC9F0;
+    --blue-deep:#153B78;
+    --gold:#E8B44C;
+    --radius:2px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg-deep);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--blue);color:#03070F;}
+
+  /* ---------- background grid ---------- */
+  .grid-field{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(46,134,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(46,134,255,0.05) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+  }
+  .glow-orb{
+    position:fixed;border-radius:50%;filter:blur(120px);z-index:0;pointer-events:none;opacity:.35;
+  }
+  .glow-1{width:520px;height:520px;background:#1B4FCC;top:-120px;left:-100px;}
+  .glow-2{width:460px;height:460px;background:#0EA5C9;bottom:10%;right:-140px;opacity:.25;}
+
+  /* ---------- animated constellation network (whole-page ambience) ---------- */
+  #netCanvas{
+    position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55;
+  }
+
+  /* ---------- decorative diagram ornaments ---------- */
+  .deco-corner{
+    position:absolute;width:46px;height:46px;pointer-events:none;opacity:.6;
+  }
+  .deco-corner.tl{top:-14px;left:-14px;border-top:1px solid var(--blue-soft);border-left:1px solid var(--blue-soft);}
+  .deco-corner.br{bottom:-14px;right:-14px;border-bottom:1px solid var(--blue-soft);border-right:1px solid var(--blue-soft);}
+  .section-head{position:relative;}
+  .section-head .head-diagram{
+    display:flex;align-items:center;gap:8px;margin-left:auto;opacity:.55;
+  }
+  .section-head .head-diagram .node{width:5px;height:5px;border-radius:50%;background:var(--blue-soft);box-shadow:0 0 6px var(--blue-soft);}
+  .section-head .head-diagram .wire{width:60px;height:1px;background:linear-gradient(90deg,var(--blue-soft),transparent);}
+
+  section{position:relative;z-index:1;}
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 5vw;
+    background:rgba(6,11,24,0.72);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(46,134,255,0.12);
+  }
+  .nav-mark{
+    font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.12em;
+    color:var(--blue-soft);display:flex;align-items:center;gap:10px;
+  }
+  .nav-mark .dot{width:7px;height:7px;background:var(--blue-soft);border-radius:50%;box-shadow:0 0 10px var(--blue-soft);}
+  nav.links{display:flex;gap:34px;}
+  nav.links a{
+    color:var(--ink-dim);text-decoration:none;font-size:13px;letter-spacing:.06em;
+    text-transform:uppercase;font-weight:500;transition:color .2s;
+    position:relative;
+  }
+  nav.links a:hover{color:var(--ink);}
+  nav.links a::after{
+    content:'';position:absolute;left:0;bottom:-6px;width:0;height:1px;background:var(--blue-soft);
+    transition:width .25s;
+  }
+  nav.links a:hover::after{width:100%;}
+  .nav-toggle{display:none;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    padding:140px 5vw 80px;position:relative;
+  }
+  .hero-eyebrow{
+    font-family:'JetBrains Mono',monospace;color:var(--blue-soft);font-size:13px;
+    letter-spacing:.18em;text-transform:uppercase;margin-bottom:26px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .hero-eyebrow::before{content:'';width:38px;height:1px;background:var(--blue-soft);}
+  h1.hero-title{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:clamp(2.6rem,6vw,5.6rem);line-height:1.02;letter-spacing:-.02em;
+    max-width:16ch;
+  }
+  h1.hero-title .accent{color:var(--blue-soft);}
+  .hero-role{
+    margin-top:26px;font-size:clamp(1.05rem,2vw,1.35rem);color:var(--ink-dim);
+    max-width:52ch;font-weight:400;
+  }
+  .hero-role b{color:var(--ink);font-weight:600;}
+
+  .ledger-stats{
+    margin-top:56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  }
+  .ledger-stats .stat{
+    padding:22px 20px;border-right:1px solid var(--line);
+  }
+  .ledger-stats .stat:last-child{border-right:none;}
+  .stat-num{
+    font-family:'JetBrains Mono',monospace;font-size:clamp(1.6rem,3vw,2.3rem);
+    font-weight:600;color:var(--blue-soft);letter-spacing:-.01em;
+  }
+  .stat-label{margin-top:6px;font-size:12px;color:var(--ink-faint);letter-spacing:.04em;text-transform:uppercase;}
+
+  .hero-cta{margin-top:44px;display:flex;gap:16px;flex-wrap:wrap;}
+  .btn{
+    font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.05em;
+    padding:14px 26px;border-radius:var(--radius);text-decoration:none;
+    display:inline-flex;align-items:center;gap:10px;transition:all .2s;
+  }
+  .btn-primary{background:var(--blue);color:#03070F;font-weight:600;}
+  .btn-primary:hover{background:var(--blue-soft);transform:translateY(-2px);}
+  .btn-ghost{border:1px solid var(--line);color:var(--ink-dim);}
+  .btn-ghost:hover{border-color:var(--blue-soft);color:var(--ink);}
+
+  /* ---------- section shell ---------- */
+  .section-shell{padding:120px 5vw;border-top:1px solid var(--line);}
+  .section-head{
+    display:flex;align-items:baseline;gap:22px;margin-bottom:64px;flex-wrap:wrap;
+  }
+  .section-index{
+    font-family:'JetBrains Mono',monospace;color:var(--blue-soft);font-size:14px;letter-spacing:.1em;
+  }
+  .section-title{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:clamp(1.8rem,3.4vw,2.8rem);
+    letter-spacing:-.01em;
+  }
+  .section-sub{
+    color:var(--ink-faint);font-size:14.5px;max-width:56ch;margin-top:10px;font-family:'Inter';
+  }
+
+  /* ---------- about ---------- */
+  .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:70px;align-items:start;}
+  .about-lede{font-size:clamp(1.1rem,1.6vw,1.5rem);font-weight:400;color:var(--ink);max-width:44ch;font-family:'Space Grotesk';line-height:1.35;}
+  .about-lede em{color:var(--blue-soft);font-style:normal;}
+  .about-body p{color:var(--ink-dim);margin-top:20px;font-size:15px;max-width:56ch;}
+  .field-card{
+    background:var(--bg-panel);border:1px solid var(--line);padding:26px 24px;margin-bottom:14px;
+  }
+  .field-card .k{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue-soft);letter-spacing:.08em;text-transform:uppercase;}
+  .field-card .v{margin-top:8px;font-size:14.5px;color:var(--ink);}
+
+  /* ---------- timeline (experience) ---------- */
+  .timeline{position:relative;padding-left:0;}
+  .tl-line{position:absolute;left:118px;top:8px;bottom:8px;width:1px;background:var(--line);}
+  .tl-entry{
+    display:grid;grid-template-columns:100px 40px 1fr;gap:0;margin-bottom:6px;
+  }
+  .tl-period{
+    font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink-faint);
+    padding-top:6px;text-align:right;padding-right:18px;
+  }
+  .tl-node{position:relative;display:flex;justify-content:center;}
+  .tl-node .dot{
+    width:11px;height:11px;border-radius:50%;background:var(--bg-deep);border:2px solid var(--blue-soft);
+    margin-top:6px;z-index:2;box-shadow:0 0 0 6px var(--bg-deep);
+  }
+  .tl-card{
+    background:var(--bg-panel);border:1px solid var(--line);padding:30px 32px;margin-bottom:56px;
+    transition:border-color .25s, transform .25s;
+  }
+  .tl-card:hover{border-color:rgba(76,201,240,0.4);transform:translateX(4px);}
+  .tl-role{font-family:'Space Grotesk',sans-serif;font-size:1.25rem;font-weight:600;}
+  .tl-org{color:var(--blue-soft);font-size:14px;margin-top:4px;font-weight:500;}
+  .tl-loc{color:var(--ink-faint);font-size:12.5px;margin-top:2px;font-family:'JetBrains Mono',monospace;}
+  .tl-desc{color:var(--ink-dim);font-size:14px;margin-top:10px;max-width:64ch;}
+  .tl-list{margin-top:18px;display:flex;flex-direction:column;gap:11px;}
+  .tl-list li{
+    list-style:none;font-size:14.5px;color:var(--ink);padding-left:22px;position:relative;line-height:1.55;
+  }
+  .tl-list li::before{
+    content:'▸';position:absolute;left:0;top:0;color:var(--blue-soft);font-size:12px;
+  }
+  .tl-metrics{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;}
+  .metric-chip{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue-soft);
+    border:1px solid var(--blue-deep);background:rgba(46,134,255,0.06);
+    padding:6px 12px;border-radius:20px;
+  }
+
+  @media(max-width:820px){
+    .tl-entry{grid-template-columns:1fr;}
+    .tl-period{text-align:left;padding:0 0 8px 0;}
+    .tl-node{display:none;}
+    .tl-line{display:none;}
+  }
+
+  /* ---------- projects ---------- */
+  .proj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px;}
+  .proj-card{
+    background:linear-gradient(160deg, var(--bg-panel) 0%, var(--bg-panel-2) 100%);
+    border:1px solid var(--line);padding:34px;position:relative;overflow:hidden;
+  }
+  .proj-card::before{
+    content:'';position:absolute;top:-40%;right:-30%;width:280px;height:280px;
+    background:radial-gradient(circle, rgba(76,201,240,0.14), transparent 70%);
+  }
+  .proj-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;}
+  .proj-title{font-family:'Space Grotesk';font-size:1.5rem;font-weight:700;margin-top:10px;}
+  .proj-desc{color:var(--ink-dim);font-size:14.5px;margin-top:14px;max-width:52ch;}
+  .proj-list{margin-top:18px;display:flex;flex-direction:column;gap:10px;}
+  .proj-list li{list-style:none;font-size:14px;color:var(--ink);padding-left:20px;position:relative;}
+  .proj-list li::before{content:'—';position:absolute;left:0;color:var(--blue-soft);}
+  .proj-stack{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px;}
+  .stack-pill{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);border:1px solid var(--line);padding:5px 10px;}
+  .proj-link{display:inline-flex;align-items:center;gap:8px;margin-top:22px;color:var(--blue-soft);font-family:'JetBrains Mono',monospace;font-size:12.5px;text-decoration:none;}
+  .proj-link:hover{color:var(--ink);}
+
+  .subproj{margin-top:26px;padding-top:22px;border-top:1px solid var(--line);}
+  .subproj-title{font-family:'Space Grotesk';font-size:1.05rem;font-weight:600;margin-bottom:8px;}
+
+  @media(max-width:900px){.proj-grid{grid-template-columns:1fr;}}
+
+  /* ---------- featured project: LOKALBISA logo showcase ---------- */
+  .proj-card.featured{grid-column:1/-1;padding:0;overflow:hidden;}
+  .logo-hero{
+    position:relative;padding:80px 40px;text-align:center;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 40%, rgba(20,50,60,0.9), #060e14 75%);
+    border-bottom:1px solid var(--line);
+  }
+  .logo-hero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.8;}
+  .logo-hero .lh-content{position:relative;z-index:2;}
+  .logo-hero .lh-wordmark{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;text-transform:uppercase;
+    font-size:clamp(2.2rem,7vw,4.6rem);letter-spacing:.04em;
+    background:linear-gradient(100deg,#33E4DB 0%,#3CD9A0 55%,#3ED66F 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 26px rgba(60,217,160,0.35));
+  }
+  .logo-hero .lh-tagline{
+    margin-top:18px;font-family:'JetBrains Mono',monospace;letter-spacing:.3em;
+    font-size:12px;color:var(--ink-dim);text-transform:uppercase;
+  }
+  .logo-hero .lh-rule{
+    width:120px;height:2px;margin:26px auto;
+    background:linear-gradient(90deg,#33E4DB,#3ED66F);border-radius:2px;
+  }
+  .logo-hero .lh-meta{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint);letter-spacing:.08em;
+  }
+  .featured-body{padding:38px 40px 40px;}
+  .featured-body .proj-tag{color:var(--gold);}
+  .featured-cols{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:18px;}
+  @media(max-width:820px){.featured-cols{grid-template-columns:1fr;}.logo-hero{padding:56px 24px;}}
+
+  /* ---------- leadership ---------- */
+  .lead-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;}
+  .lead-card{border:1px solid var(--line);padding:28px;background:var(--bg-panel);}
+  .lead-title{font-family:'Space Grotesk';font-weight:600;font-size:1.1rem;}
+  .lead-period{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-faint);margin-top:6px;}
+  .lead-list{margin-top:16px;display:flex;flex-direction:column;gap:9px;}
+  .lead-list li{list-style:none;font-size:13.8px;color:var(--ink-dim);padding-left:18px;position:relative;}
+  .lead-list li::before{content:'▸';position:absolute;left:0;color:var(--blue-soft);font-size:11px;}
+  @media(max-width:900px){.lead-grid{grid-template-columns:1fr;}}
+
+  /* ---------- skills ---------- */
+  .skills-wrap{display:grid;grid-template-columns:1fr 1fr;gap:60px;}
+  .skill-block h4{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue-soft);letter-spacing:.1em;
+    text-transform:uppercase;margin-bottom:22px;
+  }
+  .skill-row{margin-bottom:18px;}
+  .skill-row .lbl{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:8px;}
+  .skill-row .lbl span:last-child{color:var(--ink-faint);font-family:'JetBrains Mono',monospace;font-size:11.5px;}
+  .bar-track{height:5px;background:var(--line);width:100%;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-deep),var(--blue-soft));width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1);}
+
+  .tag-cloud{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
+  .tag-cloud span{
+    font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;
+    border:1px solid var(--line);color:var(--ink-dim);transition:.2s;
+  }
+  .tag-cloud span:hover{border-color:var(--blue-soft);color:var(--ink);}
+
+  @media(max-width:900px){.skills-wrap{grid-template-columns:1fr;gap:40px;}}
+
+  /* ---------- certifications ---------- */
+  .cert-groups{display:flex;flex-direction:column;gap:16px;}
+  .cert-group{border:1px solid var(--line);background:var(--bg-panel);}
+  .cert-group summary{
+    list-style:none;cursor:pointer;padding:24px 28px;display:flex;justify-content:space-between;
+    align-items:center;font-family:'Space Grotesk';font-weight:600;font-size:1.05rem;
+  }
+  .cert-group summary::-webkit-details-marker{display:none;}
+  .cert-group summary .count{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue-soft);
+    border:1px solid var(--blue-deep);padding:4px 12px;border-radius:20px;font-weight:400;
+  }
+  .cert-group summary::before{
+    content:'+';margin-right:16px;color:var(--blue-soft);font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:400;
+  }
+  .cert-group[open] summary::before{content:'−';}
+  .cert-items{padding:0 28px 26px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 26px;}
+  .cert-item{
+    font-size:13.5px;color:var(--ink-dim);padding:10px 0;border-bottom:1px dashed var(--line);
+    display:flex;justify-content:space-between;gap:12px;
+  }
+  .cert-item .date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint);white-space:nowrap;}
+  @media(max-width:760px){.cert-items{grid-template-columns:1fr;}}
+
+  /* ---------- ornamented certificate badges ---------- */
+  .cert-badge-grid{padding:6px 28px 30px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .cert-badge{
+    position:relative;border:1px solid var(--line);background:var(--bg-panel-2);
+    padding:16px 16px 14px;display:flex;gap:12px;align-items:flex-start;
+  }
+  .cert-badge::before,.cert-badge::after{
+    content:'';position:absolute;width:9px;height:9px;border-color:var(--blue-soft);opacity:.7;
+  }
+  .cert-badge::before{top:-1px;left:-1px;border-top:1px solid;border-left:1px solid;}
+  .cert-badge::after{bottom:-1px;right:-1px;border-bottom:1px solid;border-right:1px solid;}
+  .cert-badge .seal{flex:none;width:30px;height:30px;color:var(--blue-soft);opacity:.85;}
+  .cert-badge .txt .name{font-size:12.8px;color:var(--ink);line-height:1.4;font-weight:500;}
+  .cert-badge .txt .date{display:block;margin-top:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-faint);}
+  @media(max-width:900px){.cert-badge-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.cert-badge-grid{grid-template-columns:1fr;}}
+
+  /* ---------- elaborated Dicoding certificate cards ---------- */
+  .dicoding-grid{padding:6px 28px 34px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .dicoding-card{
+    position:relative;border:1px solid var(--blue-deep);background:linear-gradient(160deg,var(--bg-panel-2),var(--bg-panel));
+    padding:24px 22px 22px;overflow:hidden;
+  }
+  .dicoding-card::before,.dicoding-card::after{
+    content:'';position:absolute;width:14px;height:14px;border-color:var(--blue-soft);
+  }
+  .dicoding-card::before{top:8px;left:8px;border-top:1px solid;border-left:1px solid;}
+  .dicoding-card::after{bottom:8px;right:8px;border-bottom:1px solid;border-right:1px solid;}
+  .dicoding-card .ribbon{
+    display:flex;align-items:center;gap:8px;margin-bottom:14px;
+  }
+  .dicoding-card .ribbon svg{width:22px;height:22px;color:var(--blue-soft);}
+  .dicoding-card .ribbon span{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;
+  }
+  .dicoding-card .d-name{font-family:'Space Grotesk';font-weight:600;font-size:15px;line-height:1.35;color:var(--ink);}
+  .dicoding-card .d-desc{margin-top:10px;font-size:12.5px;color:var(--ink-dim);line-height:1.6;}
+  .dicoding-card .d-date{margin-top:14px;display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-faint);border-top:1px dashed var(--line);padding-top:10px;width:100%;}
+  @media(max-width:980px){.dicoding-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:620px){.dicoding-grid{grid-template-columns:1fr;}}
+
+  /* ---------- awards ---------- */
+  .awards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .award-card{
+    border:1px solid var(--line);padding:28px 24px;background:var(--bg-panel);position:relative;
+  }
+  .award-card .rank{
+    font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  }
+  .award-card .name{font-family:'Space Grotesk';font-weight:600;margin-top:12px;font-size:1.02rem;line-height:1.35;}
+  .award-card .org{color:var(--ink-faint);font-size:12.5px;margin-top:10px;font-family:'JetBrains Mono',monospace;}
+  @media(max-width:900px){.awards-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:600px){.awards-grid{grid-template-columns:1fr;}}
+
+  /* ---------- education ---------- */
+  .edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  .edu-card{border:1px solid var(--line);padding:30px;background:var(--bg-panel);}
+  .edu-card .school{font-family:'Space Grotesk';font-weight:600;font-size:1.15rem;}
+  .edu-card .degree{color:var(--blue-soft);font-size:14px;margin-top:8px;}
+  .edu-card .period{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-faint);margin-top:6px;}
+  .edu-card .note{color:var(--ink-dim);font-size:13.5px;margin-top:14px;line-height:1.6;}
+  @media(max-width:820px){.edu-grid{grid-template-columns:1fr;}}
+
+  /* ---------- contact / footer ---------- */
+  footer{
+    padding:110px 5vw 60px;border-top:1px solid var(--line);position:relative;z-index:1;
+  }
+  .footer-title{
+    font-family:'Space Grotesk';font-weight:700;font-size:clamp(2rem,5vw,4rem);letter-spacing:-.02em;
+    max-width:16ch;
+  }
+  .footer-title .accent{color:var(--blue-soft);}
+  .contact-row{
+    display:flex;gap:40px;flex-wrap:wrap;margin-top:48px;padding-top:32px;border-top:1px solid var(--line);
+  }
+  .contact-item .k{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;}
+  .contact-item .v{margin-top:8px;font-size:15px;color:var(--ink);}
+  .contact-item a{color:var(--ink);text-decoration:none;}
+  .contact-item a:hover{color:var(--blue-soft);}
+  .foot-bottom{margin-top:70px;display:flex;justify-content:space-between;color:var(--ink-faint);font-size:12px;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;gap:10px;}
+
+  /* reveal on scroll */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  @media(max-width:900px){
+    nav.links{display:none;}
+    .about-grid{grid-template-columns:1fr;gap:36px;}
+    .ledger-stats{grid-template-columns:repeat(2,1fr);}
+  }
+  @media(prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .reveal{opacity:1;transform:none;transition:none;}
+    .bar-fill{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-field"></div>
+<div class="glow-orb glow-1"></div>
+<div class="glow-orb glow-2"></div>
+<canvas id="netCanvas"></canvas>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="icon-seal" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="9" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+      <circle cx="12" cy="9" r="3.2" stroke="currentColor" stroke-width="1.1"/>
+      <path d="M8.3 14.5 6.5 21l5.5-2.6 5.5 2.6-1.8-6.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-badge" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2 20 6v6c0 5-3.5 8.2-8 10-4.5-1.8-8-5-8-10V6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="m8.6 12 2.3 2.3L15.6 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="nav">
+  <div class="nav-mark"><span class="dot"></span> A.H. PASARIBU / LEDGER</div>
+  <nav class="links">
+    <a href="#about">Profil</a>
+    <a href="#experience">Pengalaman</a>
+    <a href="#projects">Proyek</a>
+    <a href="#leadership">Organisasi</a>
+    <a href="#skills">Keahlian</a>
+    <a href="#certifications">Sertifikasi</a>
+    <a href="#awards">Penghargaan</a>
+    <a href="#contact">Kontak</a>
+  </nav>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="top">
+  <div class="hero-eyebrow">Jakarta Selatan, Indonesia — Terbuka untuk peluang baru</div>
+  <h1 class="hero-title">Arpin Hamonangan Pasaribu<span class="accent">.</span></h1>
+  <p class="hero-role">
+    4+ tahun mencatat setiap transaksi perbankan sampai ke digit terakhir di <b>Bank Central Asia</b> —
+    kini menerapkan disiplin ketelitian yang sama untuk membangun produk <b>AI</b>, menganalisis <b>data manusia</b>,
+    dan merancang <b>people analytics</b> yang bisa dipercaya.
+  </p>
+
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="mailto:arpinhaholongan@gmail.com">Hubungi Saya ↗</a>
+    <a class="btn btn-ghost" href="#experience">Lihat Rekam Jejak</a>
+  </div>
+
+  <div class="ledger-stats reveal" id="statBlock">
+    <div class="stat">
+      <div class="stat-num" data-count="500">0</div>
+      <div class="stat-label">Transaksi / Minggu</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-count="99.9" data-decimal="1">0</div>
+      <div class="stat-label">% Akurasi Transaksi</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-count="20">0</div>
+      <div class="stat-label">% Adopsi Produk ↑</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-count="2500" data-suffix="+">0</div>
+      <div class="stat-label">Tim — Semifinalis Hackathon</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section class="section-shell" id="about">
+  <div class="section-head reveal">
+    <span class="section-index">01 / Profil</span>
+    <h2 class="section-title">Ketelitian bank, kecepatan builder.</h2>
+  </div>
+
+  <div class="about-grid">
+    <div class="reveal">
+      <p class="about-lede">
+        Saya memproses <em>500+ transaksi keuangan</em> setiap minggu dengan akurasi 99,9% —
+        lalu membawa disiplin data itu ke luar loket, membangun <em>LOKALBISA</em>, platform kesiapan
+        ekspor UMKM berbasis AI yang lolos ke babak semifinal nasional.
+      </p>
+      <div class="about-body">
+        <p>
+          Latar belakang saya memadukan tiga dunia: operasional perbankan bervolume tinggi, analitik SDM
+          berbasis data, dan pengembangan produk AI end-to-end — mulai dari riset, arsitektur teknis,
+          hingga presentasi ke juri dan pemangku kepentingan. Saya menyelesaikan Sarjana Manajemen
+          Sumber Daya Manusia di Universitas Mitra Bangsa dengan IPK 3.61/4.00, sambil aktif membangun
+          proyek machine learning dan aplikasi web sendiri di luar jam kerja.
+        </p>
+        <p>
+          Saya percaya keputusan terbaik — baik di teller, di lapangan pemasaran, maupun di ruang HR —
+          selalu berangkat dari data yang dicatat dengan benar. Itu prinsip yang sama yang saya bawa
+          ke setiap baris kode dan setiap laporan yang saya susun.
+        </p>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="field-card">
+        <div class="k">Peran yang Dicari</div>
+        <div class="v">Product Management · People &amp; HR Analytics · Human Capital Specialist · Platform/Service Management · Banking Operations Management</div>
+      </div>
+      <div class="field-card">
+        <div class="k">Pendidikan</div>
+        <div class="v">Sarjana Manajemen SDM — Universitas Mitra Bangsa, lulus 16 Juli 2026, IPK 3.61/4.00</div>
+      </div>
+      <div class="field-card">
+        <div class="k">Bahasa</div>
+        <div class="v">Bahasa Indonesia (native) · Bahasa Inggris (TOEFL-like 617, Sep 2024)</div>
+      </div>
+      <div class="field-card">
+        <div class="k">Ketersediaan</div>
+        <div class="v">Siap bekerja segera · Bersedia ditempatkan di seluruh wilayah Indonesia</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPERIENCE ================= -->
+<section class="section-shell" id="experience">
+  <div class="section-head reveal">
+    <span class="section-index">02 / Rekam Jejak</span>
+    <h2 class="section-title">Pengalaman Kerja</h2>
+  </div>
+  <p class="section-sub reveal">Delapan tahun perjalanan operasional — dari lantai gudang ritel hingga loket bank nasional — dicatat setiap tahapnya.</p>
+
+  <div class="timeline" style="margin-top:56px;">
+    <div class="tl-line"></div>
+
+    <div class="tl-entry reveal">
+      <div class="tl-period">Jul 2022 —<br>Sekarang</div>
+      <div class="tl-node"><div class="dot"></div></div>
+      <div class="tl-card">
+        <div class="tl-role">Bank Teller &amp; Operational Data Analyst</div>
+        <div class="tl-org">PT Bank Central Asia (BCA)</div>
+        <div class="tl-loc">Jakarta, Indonesia · 4 tahun 2 bulan</div>
+        <p class="tl-desc">
+          Anggota tim cabang beranggotakan 12 orang di salah satu bank swasta terbesar Indonesia,
+          bertanggung jawab atas pemrosesan transaksi bervolume tinggi, kepuasan nasabah, dan pelaporan data operasional.
+        </p>
+        <ul class="tl-list">
+          <li>Memproses 500+ transaksi keuangan mingguan (tabungan, setoran, transfer, valas) dengan akurasi 99,9% terhadap target zero-error.</li>
+          <li>Mendorong peningkatan adopsi produk sebesar 20% dengan membaca profil keuangan nasabah dan proaktif mencocokkannya dengan produk BCA yang relevan.</li>
+          <li>Mempertahankan skor kepuasan pelanggan 95%+ selama 3+ tahun, menyelesaikan komplain dan eskalasi di hari yang sama.</li>
+          <li>Membimbing dan melatih staf baru terkait sistem perbankan, SOP, dan prosedur layanan; menyusun materi pelatihan internal.</li>
+          <li>Merancang dan menyampaikan program pelatihan kesadaran keamanan siber se-perusahaan (BCA Digital Buddy Team, 2024), meningkatkan literasi tim 40% dan menurunkan insiden keamanan digital 30%.</li>
+          <li>Membagikan insight transaksi harian kepada supervisor, berkontribusi pada penyesuaian manajemen antrean dan staffing jam sibuk.</li>
+          <li>Diakui sebagai Top 50 Best Performer, SSRP BCA Kanwil X, atas keunggulan operasional, kualitas layanan, dan pengetahuan produk.</li>
+        </ul>
+        <div class="tl-metrics">
+          <span class="metric-chip">500+ transaksi / minggu</span>
+          <span class="metric-chip">99.9% akurasi</span>
+          <span class="metric-chip">95%+ kepuasan pelanggan</span>
+          <span class="metric-chip">Top 50 Kanwil X</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-entry reveal">
+      <div class="tl-period">Mei 2022 —<br>Jul 2022</div>
+      <div class="tl-node"><div class="dot"></div></div>
+      <div class="tl-card">
+        <div class="tl-role">Marketing Field Assistant</div>
+        <div class="tl-org">Shafira Corporation</div>
+        <div class="tl-loc">DKI Jakarta, Indonesia · 3 bulan</div>
+        <p class="tl-desc">
+          Diterjunkan sebagai perwakilan pemasaran lapangan untuk salah satu merek modest fashion mapan di Indonesia,
+          bertugas mendorong penjualan dan kehadiran merek di berbagai titik ritel DKI Jakarta.
+        </p>
+        <ul class="tl-list">
+          <li>Mencapai pertumbuhan pendapatan 90% dalam 3 bulan melalui strategi pemasaran lapangan berbasis data.</li>
+          <li>Melakukan riset pasar langsung di 10+ lokasi menggunakan panduan wawancara terstruktur; menyusun temuan di Google Sheets/Forms.</li>
+          <li>Merencanakan dan mengeksekusi kampanye pemasaran lapangan mingguan, memantau footfall dan penjualan harian via Excel.</li>
+          <li>Menganalisis KPI kampanye mingguan (conversion rate, revenue per lokasi, customer acquisition cost) melalui pivot table Excel.</li>
+          <li>Berkoordinasi dengan tim sales, produk, dan inventaris untuk menyelaraskan promosi dengan ketersediaan stok dan kalender HQ.</li>
+        </ul>
+        <div class="tl-metrics">
+          <span class="metric-chip">90% pertumbuhan pendapatan</span>
+          <span class="metric-chip">10+ lokasi riset</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-entry reveal">
+      <div class="tl-period">Sep 2018 —<br>Mei 2022</div>
+      <div class="tl-node"><div class="dot"></div></div>
+      <div class="tl-card">
+        <div class="tl-role">Administrative Assistant</div>
+        <div class="tl-org">Maju Bersama Supermarket</div>
+        <div class="tl-loc">Medan, Indonesia · 3 tahun 9 bulan</div>
+        <p class="tl-desc">
+          Mendukung fungsi administratif dan operasional harian di supermarket ritel skala menengah selama
+          3,5 tahun, mencakup manajemen inventaris, pelaporan, penjadwalan, dan koordinasi pemasok.
+        </p>
+        <ul class="tl-list">
+          <li>Mengelola catatan inventaris untuk 200+ SKU, memantau pengiriman, tingkat stok, dan titik pemesanan ulang harian.</li>
+          <li>Menyiapkan laporan operasional mingguan dan bulanan untuk keputusan pembelian dan perencanaan anggaran.</li>
+          <li>Mengelola penjadwalan staf untuk 15+ karyawan lintas shift, memastikan cakupan memadai di jam sibuk dan hari libur.</li>
+          <li>Memelihara sistem pengarsipan siap-audit untuk faktur pemasok, tanda terima pengiriman, dan purchase order.</li>
+          <li>Membangun kapabilitas fondasi dalam entri data, pelaporan operasional, dan alur kerja administratif yang kini mendasari kerja HR dan people data management.</li>
+        </ul>
+        <div class="tl-metrics">
+          <span class="metric-chip">200+ SKU dikelola</span>
+          <span class="metric-chip">15+ staf terjadwal</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROJECTS ================= -->
+<section class="section-shell" id="projects" style="background:linear-gradient(180deg, transparent, rgba(20,33,65,0.25), transparent);">
+  <div class="section-head reveal">
+    <span class="section-index">03 / Karya</span>
+    <h2 class="section-title">Proyek Teknis &amp; Produk Unggulan</h2>
+  </div>
+  <p class="section-sub reveal">Dibangun sendiri, di luar jam kerja bank — dari riset pasar UMKM sampai fine-tuning model bahasa.</p>
+
+  <div class="proj-grid" style="margin-top:56px;">
+    <div class="proj-card featured reveal">
+      <div class="logo-hero">
+        <canvas id="lokalbisaCanvas"></canvas>
+        <div class="lh-content">
+          <div class="lh-wordmark">LOKALBISA</div>
+          <div class="lh-tagline">AI-Powered Export Launchpad</div>
+          <div class="lh-rule"></div>
+          <div class="lh-meta">SOLO DEVELOPER &amp; PRODUCT OWNER · PWA · PIDI DIGDAYA 2026</div>
+        </div>
+      </div>
+      <div class="featured-body">
+        <span class="proj-tag">Solo Developer &amp; Product Owner</span>
+        <p class="proj-desc" style="margin-top:14px;max-width:70ch;">AI Export Launchpad untuk UMKM Indonesia — menghubungkan pelaku usaha lokal dengan pasar ekspor melalui pencocokan pembeli berbasis AI. Lolos ke babak semifinal PIDI DIGDAYA x Hackathon 2026 di antara 2.500 tim nasional.</p>
+
+        <div class="featured-cols">
+          <div>
+            <ul class="proj-list">
+              <li>PWA yang menghubungkan UMKM Indonesia dengan 24 profil pembeli internasional melalui mesin Smart Buyer Matching.</li>
+              <li>Compliance Guide berbasis AI mencakup 8 negara tujuan ekspor, terintegrasi dengan Gemini API untuk panduan real-time.</li>
+            </ul>
+          </div>
+          <div>
+            <ul class="proj-list">
+              <li>Autentikasi aman: password hashing, WhatsApp OTP via Fonnte, WebAuthn biometric login.</li>
+              <li>Sistem notifikasi tersinkron dengan Firestore; proposal Tahap 3 menjawab keenam kriteria evaluasi PIDI DIGDAYA.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="proj-stack" style="margin-top:26px;">
+          <span class="stack-pill">Python</span><span class="stack-pill">Streamlit</span><span class="stack-pill">PWA</span>
+          <span class="stack-pill">Firestore</span><span class="stack-pill">Gemini API</span><span class="stack-pill">WebAuthn</span>
+          <span class="stack-pill">Smart Buyer Matching</span><span class="stack-pill">Fonnte OTP</span>
+        </div>
+        <a class="proj-link" href="https://arvipasaribu2000.github.io/lokalbisa1" target="_blank" rel="noopener">Lihat Demo Prototipe ↗</a>
+      </div>
+    </div>
+
+    <div class="proj-card reveal" style="grid-column:1/-1;">
+      <span class="proj-tag">Applied Machine Learning</span>
+      <h3 class="proj-title">Proyek ML &amp; Backend Terapan</h3>
+      <p class="proj-desc">Rangkaian eksperimen machine learning dan backend produksi — dari klasifikasi gambar hingga chatbot legal berbasis RAG.</p>
+
+      <div class="subproj">
+        <div class="subproj-title">Klasifikasi Gambar CNN</div>
+        <ul class="proj-list">
+          <li>Dataset Intel Image Classification, target akurasi 95%+, diekspor ke TensorFlow.js/TF-Lite.</li>
+        </ul>
+      </div>
+      <div class="subproj">
+        <div class="subproj-title">Deteksi Kanker Kulit</div>
+        <ul class="proj-list">
+          <li>Backend Express.js + TensorFlow.js + Firestore, di-deploy di Cloud Run sebagai submission produk ML lengkap.</li>
+        </ul>
+      </div>
+      <div class="subproj">
+        <div class="subproj-title">Chatbot Legal Berbasis RAG</div>
+        <ul class="proj-list">
+          <li>QLoRA fine-tuning, ensemble retrieval BM25 + FAISS, HyDE, cross-encoder reranking — disajikan melalui Gradio.</li>
+        </ul>
+      </div>
+      <div class="proj-stack">
+        <span class="stack-pill">TensorFlow.js</span><span class="stack-pill">Express.js</span><span class="stack-pill">Cloud Run</span>
+        <span class="stack-pill">QLoRA</span><span class="stack-pill">FAISS</span><span class="stack-pill">Gradio</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LEADERSHIP ================= -->
+<section class="section-shell" id="leadership">
+  <div class="section-head reveal">
+    <span class="section-index">04 / Organisasi</span>
+    <h2 class="section-title">Pengalaman Organisasi &amp; Kepemimpinan</h2>
+  </div>
+
+  <div class="lead-grid" style="margin-top:56px;">
+    <div class="lead-card reveal">
+      <div class="lead-title">Ketua (Team Lead), BTK Squad</div>
+      <div class="lead-period">PIDI DIGDAYA x Hackathon 2026 (Bank Indonesia &amp; OJK) · Semifinalis — saat ini Tahap Practitioner Training</div>
+      <ul class="lead-list">
+        <li>Memimpin tim hingga babak semifinal di antara 2.500 tim nasional dalam kompetisi inovasi digital.</li>
+        <li>Mengembangkan Lokal_Bisa, prototipe digital yang memberdayakan UMKM lokal melalui akses pasar dan keuangan.</li>
+        <li>Melakukan analisis data pasar dan riset pengguna untuk memvalidasi asumsi bisnis.</li>
+        <li>Berkolaborasi dengan tim lintas disiplin untuk membangun dan memvalidasi prototipe.</li>
+        <li>Mempresentasikan prototipe kepada juri dan mentor dari Bank Indonesia serta mitra strategis.</li>
+      </ul>
+    </div>
+
+    <div class="lead-card reveal">
+      <div class="lead-title">BCA Digital Buddy Team</div>
+      <div class="lead-period">Cybersecurity and Risk Awareness · 2024</div>
+      <ul class="lead-list">
+        <li>Mengidentifikasi dan membantu memitigasi ancaman keamanan siber, menurunkan 30% risiko keamanan digital di cabang.</li>
+        <li>Merancang dan menyampaikan program pelatihan internal, meningkatkan literasi keamanan siber tim 40%.</li>
+        <li>Mendukung kepatuhan regulasi dan praktik perlindungan data dalam operasional harian.</li>
+      </ul>
+    </div>
+
+    <div class="lead-card reveal">
+      <div class="lead-title">BCA Bluecaster Program</div>
+      <div class="lead-period">Content Creator &amp; Internal Communications · 2023–2025</div>
+      <ul class="lead-list">
+        <li>Memproduksi konten edukasi dan promosi untuk platform digital BCA, meningkatkan engagement 25%.</li>
+        <li>Diakui sebagai Top 30, National Bluecaster Competition, atas komunikasi dan digital storytelling.</li>
+      </ul>
+    </div>
+
+    <div class="lead-card reveal">
+      <div class="lead-title">BIA (BCA Innovation Award)</div>
+      <div class="lead-period">Peserta Aktif</div>
+      <ul class="lead-list">
+        <li>Mengembangkan Flazz 3rd Generation, prototipe solusi digital untuk pengalaman nasabah dan efisiensi operasional.</li>
+        <li>Mempresentasikan ide inovatif kepada manajemen regional, mengasah berpikir strategis dan presentasi.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SKILLS ================= -->
+<section class="section-shell" id="skills" style="background:linear-gradient(180deg, transparent, rgba(20,33,65,0.25), transparent);">
+  <div class="section-head reveal">
+    <span class="section-index">05 / Kompetensi</span>
+    <h2 class="section-title">Keahlian &amp; Perangkat</h2>
+  </div>
+
+  <div class="skills-wrap" style="margin-top:56px;">
+    <div class="skill-block reveal">
+      <h4>Hard Skills</h4>
+      <div class="skill-row"><div class="lbl"><span>Analisis Data (Python, Excel, Looker Studio)</span><span>Mahir</span></div><div class="bar-track"><div class="bar-fill" data-w="92"></div></div></div>
+      <div class="skill-row"><div class="lbl"><span>AI Terapan &amp; Integrasi LLM</span><span>Mahir</span></div><div class="bar-track"><div class="bar-fill" data-w="88"></div></div></div>
+      <div class="skill-row"><div class="lbl"><span>Progressive Web Applications</span><span>Mahir</span></div><div class="bar-track"><div class="bar-fill" data-w="85"></div></div></div>
+      <div class="skill-row"><div class="lbl"><span>Workforce &amp; People Analytics</span><span>Menengah–Mahir</span></div><div class="bar-track"><div class="bar-fill" data-w="80"></div></div></div>
+      <div class="skill-row"><div class="lbl"><span>Operasional &amp; Kepatuhan Perbankan</span><span>Mahir</span></div><div class="bar-track"><div class="bar-fill" data-w="95"></div></div></div>
+      <div class="skill-row"><div class="lbl"><span>Product Discovery &amp; Roadmapping</span><span>Menengah–Mahir</span></div><div class="bar-track"><div class="bar-fill" data-w="78"></div></div></div>
+    </div>
+
+    <div class="skill-block reveal">
+      <h4>Tumpukan Teknis</h4>
+      <div class="tag-cloud">
+        <span>Python</span><span>Streamlit</span><span>Pandas</span><span>TensorFlow / TF.js</span>
+        <span>Node.js / Express</span><span>Firestore</span><span>Google Cloud Run</span><span>REST API</span>
+        <span>Git / GitHub</span><span>CrewAI</span><span>Prompt Engineering</span><span>RAG (BM25 + FAISS)</span>
+        <span>HyDE</span><span>Cross-encoder Reranking</span><span>QLoRA Fine-tuning</span>
+        <span>Anthropic Claude API</span><span>Google Gemini API</span><span>Excel Advanced</span>
+        <span>Google Looker Studio</span><span>MS Teams</span>
+      </div>
+      <h4 style="margin-top:36px;">Soft Skills</h4>
+      <div class="tag-cloud">
+        <span>Kepemimpinan</span><span>Komunikasi</span><span>Kolaborasi</span><span>Problem Solving</span>
+        <span>Berpikir Analitis</span><span>Customer Orientation</span><span>Achievement Orientation</span>
+        <span>Proaktif</span><span>Plan &amp; Align</span><span>Work Management</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CERTIFICATIONS ================= -->
+<section class="section-shell" id="certifications">
+  <div class="section-head reveal">
+    <span class="section-index">06 / Arsip</span>
+    <h2 class="section-title">Sertifikasi (50+)</h2>
+  </div>
+  <p class="section-sub reveal">Dikelompokkan berdasarkan penerbit. Klik setiap kategori untuk membuka daftar lengkap.</p>
+
+  <div class="cert-groups reveal" style="margin-top:48px;">
+
+    <details class="cert-group" open>
+      <summary>Dicoding — Google Authorized Training Partner <span class="count">15 sertifikasi</span></summary>
+      <div class="dicoding-grid">
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Generative AI</span></div>
+          <div class="d-name">Development of Generative AI based on LLM</div>
+          <div class="d-desc">Membangun aplikasi generatif di atas large language model — orchestration, prompting terstruktur, dan integrasi API model bahasa ke produk nyata.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Machine Learning</span></div>
+          <div class="d-name">Learn Deep Learning Fundamentals</div>
+          <div class="d-desc">Dasar jaringan saraf tiruan: forward/backward propagation, fungsi aktivasi, dan arsitektur deep learning untuk klasifikasi data.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Generative AI</span></div>
+          <div class="d-name">Learning the Fundamentals of Generative AI</div>
+          <div class="d-desc">Konsep inti generative AI — model bahasa dan model gambar — serta prinsip kerja di balik konten yang dihasilkan AI.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Project Mgmt</span></div>
+          <div class="d-name">Learn Basic Project Management</div>
+          <div class="d-desc">Fondasi manajemen proyek: perencanaan lingkup, penjadwalan, alokasi sumber daya, dan pelacakan progres tim.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Prompt Eng.</span></div>
+          <div class="d-name">Prompt Engineering untuk Software Developer</div>
+          <div class="d-desc">Teknik menyusun prompt efektif untuk memandu model bahasa menghasilkan output kode dan teks yang akurat.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Cloud</span></div>
+          <div class="d-name">Learn Google Cloud Basics</div>
+          <div class="d-desc">Pengenalan layanan inti Google Cloud Platform — compute, storage, dan dasar arsitektur cloud.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>UX Design</span></div>
+          <div class="d-name">Learn the Basics of UX Design</div>
+          <div class="d-desc">Prinsip riset pengguna, wireframing, dan alur desain antarmuka yang berpusat pada pengguna.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Data Science</span></div>
+          <div class="d-name">Learn Basic Data Science</div>
+          <div class="d-desc">Alur kerja data science dasar: pembersihan data, eksplorasi, dan interpretasi pola untuk pengambilan keputusan.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Programming</span></div>
+          <div class="d-name">Getting Started with Programming with Python</div>
+          <div class="d-desc">Sintaks dasar Python — struktur data, fungsi, dan logika pemrograman sebagai fondasi pengembangan.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Data Analysis</span></div>
+          <div class="d-name">Data Analysis Fundamentals</div>
+          <div class="d-desc">Teknik analisis data terapan menggunakan Python — pengolahan, visualisasi, dan penarikan insight dari dataset.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Digital Literacy</span></div>
+          <div class="d-name">Advancing My Digital Literacy with AI</div>
+          <div class="d-desc">Literasi digital lanjutan dalam memanfaatkan alat AI secara aman dan produktif di lingkungan kerja.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Productivity</span></div>
+          <div class="d-name">Practical AI for Productivity</div>
+          <div class="d-desc">Penerapan praktis alat AI untuk mengotomatisasi tugas harian dan meningkatkan efisiensi kerja.</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Data Analysis</span></div>
+          <div class="d-name">Belajar Fundamental Analisis Data</div>
+          <div class="d-desc">Fondasi analisis data: statistik deskriptif, pengolahan data tabular, dan interpretasi hasil analisis.</div>
+          <div class="d-date">Diterbitkan April 2026</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>AI Fundamentals</span></div>
+          <div class="d-name">Belajar Dasar AI</div>
+          <div class="d-desc">Konsep dasar kecerdasan buatan: machine learning, kasus penggunaan, dan etika penerapan AI.</div>
+          <div class="d-date">Diterbitkan April 2026</div>
+        </div>
+
+        <div class="dicoding-card">
+          <div class="ribbon"><svg><use href="#icon-badge"/></svg><span>Productivity</span></div>
+          <div class="d-name">AI Praktis untuk Produktivitas</div>
+          <div class="d-desc">Strategi praktis mengintegrasikan tools AI ke alur kerja sehari-hari untuk hasil yang lebih efisien.</div>
+          <div class="d-date">Diterbitkan Maret 2026</div>
+        </div>
+
+      </div>
+    </details>
+
+    <details class="cert-group">
+      <summary>MySkill &amp; Alison <span class="count">5 sertifikasi</span></summary>
+      <div class="cert-badge-grid">
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Human Resources: People Analytics</span><span class="date">Feb 2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Understanding HR Frameworks</span><span class="date">Mar 2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Line Management Essential Skills — CPD Certified</span><span class="date">2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Index Match, VLOOKUP and HLOOKUP in Ms. Excel</span><span class="date">Apr 2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Data Visualization with Microsoft Excel</span><span class="date">Mar 2025</span></div></div>
+      </div>
+    </details>
+
+    <details class="cert-group">
+      <summary>Perbankan Internal BCA — Kepatuhan &amp; Manajemen Risiko (E-Learning) <span class="count">32 sertifikasi</span></summary>
+      <div class="cert-badge-grid">
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Uji Pemahaman APU-PPT Teller Periode I Tahun 2026</span><span class="date">4/2026</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Human Firewall</span><span class="date">4/2026</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L APU, PPT &amp; PPPSPM</span><span class="date">3/2026</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Digital Xperience 2020 Tahun 2025</span><span class="date">10/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pelindungan Konsumen: Layanan Pengaduan</span><span class="date">10/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pelindungan Konsumen</span><span class="date">10/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Simulasi BC Plan B</span><span class="date">9/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pengenalan Keselamatan dan Kesehatan Kerja / K3</span><span class="date">8/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Anti Fraud Awareness</span><span class="date">8/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pemahaman Kepatuhan Operasional</span><span class="date">8/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Hak Asasi Manusia di BCA</span><span class="date">7/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Pembekalan Customer Relations H-1, H-2, H-3</span><span class="date">7/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L myBCA: Level Up Banking Experience</span><span class="date">6/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Internet Security and You</span><span class="date">5/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pemeliharaan SPPUR Pengelolaan Uang Tunai 4</span><span class="date">4/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pemeliharaan SPPUR Transfer Dana 4</span><span class="date">4/2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pelindungan Konsumen</span><span class="date">6/2024</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Berpaling dari Phishing</span><span class="date">6/2024</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Smart Solution</span><span class="date">6/2024</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L KPR, KKB, KSM, dan Kartu Kredit — Magang Bakti</span><span class="date">5/2024</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Virtual Evacuation Drill — Petugas Evakuasi Kanwil dan Cabang</span><span class="date">5/2024</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Guess the Word</span><span class="date">10/2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Manajemen Risiko</span><span class="date">8/2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pengamanan Informasi / Mobile</span><span class="date">6/2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Cyber Security for Social Media — E-Learning Wajib 2023</span><span class="date">4/2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Pengenalan Perubahan Iklim — E-Learning Wajib 2023</span><span class="date">3/2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Green Office — E-Learning Wajib 2023</span><span class="date">2/2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Kebijakan Anti Korupsi &amp; Pengendalian Gratifikasi — E-Learning Wajib 2023</span><span class="date">2/2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Collaboration Tools with MS Teams</span><span class="date">9/2022</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Handling Objection - Bancassurance</span><span class="date">9/2022</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Anti Fraud Awareness / Mobile</span><span class="date">9/2022</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">E-L Data Classification</span><span class="date">9/2022</span></div></div>
+      </div>
+    </details>
+
+    <details class="cert-group">
+      <summary>Lainnya <span class="count">6 sertifikasi</span></summary>
+      <div class="cert-badge-grid">
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">BBCA Service Excellence</span><span class="date">2022–2023</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">BBCA Banking Solutions</span><span class="date">2023–2024</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">BBCA Customer Experience</span><span class="date">2024–2025</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">BBCA Customer Relationship</span><span class="date">2025–2026</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">Cybersecurity Awareness Training</span><span class="date">2024</span></div></div>
+        <div class="cert-badge"><svg class="seal"><use href="#icon-seal"/></svg><div class="txt"><span class="name">TOEFL-like Test — Skor 617</span><span class="date">Sep 2024</span></div></div>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ================= AWARDS ================= -->
+<section class="section-shell" id="awards" style="background:linear-gradient(180deg, transparent, rgba(20,33,65,0.25), transparent);">
+  <div class="section-head reveal">
+    <span class="section-index">07 / Pengakuan</span>
+    <h2 class="section-title">Penghargaan &amp; Prestasi</h2>
+  </div>
+
+  <div class="awards-grid" style="margin-top:56px;">
+    <div class="award-card reveal">
+      <div class="rank">Kompetisi Nasional 2026</div>
+      <div class="name">Semifinalis — PIDI DIGDAYA x Hackathon 2026</div>
+      <div class="org">Bank Indonesia &amp; OJK · di antara 2.500 tim nasional</div>
+    </div>
+    <div class="award-card reveal">
+      <div class="rank">Medali Perunggu</div>
+      <div class="name">National Essay Competition IDF5</div>
+      <div class="org">Sentosa Foundation &amp; IPB · Jun 2026</div>
+    </div>
+    <div class="award-card reveal">
+      <div class="rank">Best Paper</div>
+      <div class="name">National Essay Competition IDF5</div>
+      <div class="org">Sentosa Foundation &amp; IPB · Jun 2026</div>
+    </div>
+    <div class="award-card reveal">
+      <div class="rank">Internal BCA</div>
+      <div class="name">Top 50 Best Performer</div>
+      <div class="org">SSRP BCA Kanwil X · 2024</div>
+    </div>
+    <div class="award-card reveal">
+      <div class="rank">Kompetisi Nasional</div>
+      <div class="name">Top 30 National Bluecaster</div>
+      <div class="org">BCA · 2024</div>
+    </div>
+    <div class="award-card reveal">
+      <div class="rank">Internal BCA</div>
+      <div class="name">Winner — MyBCA Birthday Special Comic Competition</div>
+      <div class="org">BCA Internal · 2023</div>
+    </div>
+    <div class="award-card reveal" style="grid-column:span 2;">
+      <div class="rank">Riset Aktif</div>
+      <div class="name">Active Researcher — makalah diajukan ke BMEB Bank Indonesia dan KARISMA OJK Paper Award 2026</div>
+      <div class="org">Bank Indonesia &amp; OJK · 2026</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EDUCATION ================= -->
+<section class="section-shell" id="education">
+  <div class="section-head reveal">
+    <span class="section-index">08 / Fondasi</span>
+    <h2 class="section-title">Pendidikan</h2>
+  </div>
+
+  <div class="edu-grid" style="margin-top:56px;">
+    <div class="edu-card reveal">
+      <div class="school">Mitra Bangsa University (UMIBA)</div>
+      <div class="degree">Gelar Sarjana Manajemen — Manajemen Sumber Daya Manusia</div>
+      <div class="period">Agustus 2022 — Lulus 16 Juli 2026 · IPK 3.61 / 4.00</div>
+      <div class="note">
+        Skripsi: <em>"Pengaruh Persepsi dan Keterlibatan Karyawan terhadap Kesiapan Inovasi Digital
+        (Studi Kasus di BCA KCP Jembatan Merah)"</em> — penelitian kuantitatif menggunakan analisis regresi.
+      </div>
+    </div>
+    <div class="edu-card reveal">
+      <div class="school">SMK Negeri 1 Huristak</div>
+      <div class="degree">Agribisnis Tanaman Perkebunan — Agro Business of Plantation Crops</div>
+      <div class="period">Maret 2015 — Mei 2018</div>
+      <div class="note">Peringkat 1 konsisten selama 4 semester berturut-turut.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONTACT / FOOTER ================= -->
+<footer id="contact">
+  <div class="reveal">
+    <span class="section-index">09 / Hubungi</span>
+    <h2 class="footer-title" style="margin-top:20px;">Mari bicarakan peluang<span class="accent"> berikutnya.</span></h2>
+  </div>
+
+  <div class="contact-row reveal">
+    <div class="contact-item">
+      <div class="k">Email</div>
+      <div class="v"><a href="mailto:arpinhaholongan@gmail.com">arpinhaholongan@gmail.com</a></div>
+    </div>
+    <div class="contact-item">
+      <div class="k">Telepon</div>
+      <div class="v"><a href="tel:+6283894124067">+62 838-9412-4067</a></div>
+    </div>
+    <div class="contact-item">
+      <div class="k">LinkedIn</div>
+      <div class="v"><a href="https://linkedin.com/in/arpin-hamonangan-pasaribu" target="_blank" rel="noopener">linkedin.com/in/arpin-hamonangan-pasaribu</a></div>
+    </div>
+    <div class="contact-item">
+      <div class="k">Portofolio</div>
+      <div class="v"><a href="https://arvipasaribu2000.github.io/PORTOPOLIO/" target="_blank" rel="noopener">arvipasaribu2000.github.io/PORTOPOLIO</a></div>
+    </div>
+    <div class="contact-item">
+      <div class="k">Lokasi</div>
+      <div class="v">Jakarta Selatan, Indonesia</div>
+    </div>
+  </div>
+
+  <div class="foot-bottom">
+    <span>© 2026 ARPIN HAMONANGAN PASARIBU</span>
+    <span>DISUSUN DENGAN KETELITIAN LOKET BANK</span>
+  </div>
+</footer>
+
+<script>
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
+
+  // Animated stat counters
+  const statEls = document.querySelectorAll('.stat-num');
+  const statIO = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseFloat(el.dataset.count);
+        const decimals = parseInt(el.dataset.decimal || '0');
+        const suffix = el.dataset.suffix || '';
+        let start = null;
+        const duration = 1300;
+        function step(ts){
+          if(!start) start = ts;
+          const progress = Math.min((ts - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const val = target * eased;
+          el.textContent = (decimals ? val.toFixed(decimals) : Math.floor(val)) + suffix;
+          if(progress < 1) requestAnimationFrame(step);
+          else el.textContent = (decimals ? target.toFixed(decimals) : target) + suffix;
+        }
+        requestAnimationFrame(step);
+        statIO.unobserve(el);
+      }
+    });
+  }, { threshold: 0.4 });
+  statEls.forEach(el => statIO.observe(el));
+
+  // Skill bars
+  const bars = document.querySelectorAll('.bar-fill');
+  const barIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        e.target.style.width = e.target.dataset.w + '%';
+        barIO.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  bars.forEach(b => barIO.observe(b));
+
+  // Inject small diagram ornaments into every section head (node — wire)
+  document.querySelectorAll('.section-head').forEach(head => {
+    const deco = document.createElement('span');
+    deco.className = 'head-diagram';
+    deco.innerHTML = '<span class="wire"></span><span class="node"></span><span class="wire" style="width:18px"></span>';
+    head.appendChild(deco);
+  });
+
+  // ---------- Constellation network canvas (reusable) ----------
+  function initNetwork(canvasId, opts){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, points;
+    const density = opts.density || 14000;
+    const color = opts.color || '76,201,240';
+    const linkDist = opts.linkDist || 140;
+    const speed = opts.speed || 0.18;
+
+    function resize(){
+      const rect = canvas.getBoundingClientRect();
+      w = canvas.width = rect.width;
+      h = canvas.height = rect.height;
+      const count = Math.max(18, Math.floor((w*h)/density));
+      points = Array.from({length:count}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*speed,
+        vy: (Math.random()-0.5)*speed,
+        r: Math.random()*1.6+0.6
+      }));
+    }
+
+    function tick(){
+      ctx.clearRect(0,0,w,h);
+      for(const p of points){
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0 || p.x > w) p.vx *= -1;
+        if(p.y < 0 || p.y > h) p.vy *= -1;
+      }
+      for(let i=0;i<points.length;i++){
+        for(let j=i+1;j<points.length;j++){
+          const a = points[i], b = points[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx+dy*dy);
+          if(dist < linkDist){
+            ctx.strokeStyle = `rgba(${color},${(1 - dist/linkDist)*0.35})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for(const p of points){
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(${color},0.85)`;
+        ctx.shadowColor = `rgba(${color},0.9)`;
+        ctx.shadowBlur = 4;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      requestAnimationFrame(tick);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+    if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      requestAnimationFrame(tick);
+    }
+  }
+
+  // Whole-page ambient network (behind everything, blue)
+  initNetwork('netCanvas', { density: 26000, color: '76,201,240', linkDist: 150, speed: 0.12 });
+
+  // LOKALBISA showcase network (denser, teal → green, matches product splash screen)
+  initNetwork('lokalbisaCanvas', { density: 9000, color: '61,214,160', linkDist: 130, speed: 0.22 });
+</script>
+
+</body>
+</html>
